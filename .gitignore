@@ -5,3 +5,8 @@ obj/
 /.vs/mHttp/v14/.suo
 /packages/NuGet.CommandLine.3.4.3
 /mHttp/packages.config
+/mHttp/mHttp.nuspec
+/mHttp/mHttp.0.1.6049.22099.nupkg
+/mHttp/mHttp.0.1.6048.29224.nupkg
+/mHttp
+/.nuget/nuget.exe
