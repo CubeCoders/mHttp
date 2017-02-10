@@ -8,17 +8,17 @@ using m.Http.Extensions;
 
 namespace m.Http.Handlers
 {
-    public class StaticFileHandler
+    public class StaticFileHandler // not threadsafe really, but good for now
     {
         class CachedFile
         {
-            public FileResponse Response { get; }
+            public FileResponse.Buffered Response { get; }
             public HttpResponse GZippedResponse { get; }
 
             public DateTime LastModified { get; }
             public string ContentType { get; }
 
-            public CachedFile(FileResponse response, HttpResponse gzippedResponse)
+            public CachedFile(FileResponse.Buffered response, HttpResponse gzippedResponse)
             {
                 Response = response;
                 LastModified = response.LastModified;
@@ -28,51 +28,38 @@ namespace m.Http.Handlers
         }
 
         static readonly HttpResponse NotFound = new HttpResponse(HttpStatusCode.NotFound);
+        static readonly HttpResponse Forbidden = new HttpResponse(HttpStatusCode.Forbidden);
 
-        readonly int pathFilenameStartIndex;
+        readonly int reqPathFilenameStartIndex;
         readonly string directory;
-        readonly Func<byte[], byte[]> gzipFunc;
+        readonly Func<HttpResponse, HttpResponse> gzipFunc;
+        readonly int maxFileLengthToCache=32768;
 
         readonly ConcurrentDictionary<string, CachedFile> cache;
 
-        public StaticFileHandler(int pathFilenameStartIndex, DirectoryInfo dirInfo, Func<byte[], byte[]> gzipFuncImpl)
+        public StaticFileHandler(int reqPathFilenameStartIndex,
+                                 DirectoryInfo dirInfo,
+                                 Func<HttpResponse, HttpResponse> gzipFunc,
+                                 int maxFileLengthToCache=32768)
         {
-            this.pathFilenameStartIndex = pathFilenameStartIndex; // position (string index) of incoming `request.Path` at which the requested filename is expected to begin
-            directory = dirInfo.FullName;
-            gzipFunc = gzipFuncImpl;
-
-            cache = new ConcurrentDictionary<string, CachedFile>(StringComparer.Ordinal);
-        }
-
-        [Obsolete] public StaticFileHandler(string route, string directory, Func<byte[], byte[]> gzipFunc)
-        {
-            while (directory[0] == Path.DirectorySeparatorChar)
-            {
-                directory = directory.Substring(1);
-            }
-
-            pathFilenameStartIndex = route.Length - 1; // trailing wildcard *
-
-            var dirInfo = new DirectoryInfo(directory);
-            if (dirInfo.Exists)
-            {
-                this.directory = dirInfo.FullName;
-            }
-            else
-            {
-                throw new DirectoryNotFoundException($"The specified directory {dirInfo.FullName} could not be found.");
-            }
-
-            this.gzipFunc = gzipFunc;
+            this.reqPathFilenameStartIndex = reqPathFilenameStartIndex; // Position (string index) of incoming `request.Path` at which the requested filename is expected to begin
+            directory = dirInfo.FullName;                               // Directory root to serve
+            this.gzipFunc = gzipFunc;                                   // Supply identity function if you want to skip gzipping
+            this.maxFileLengthToCache = maxFileLengthToCache;
 
             cache = new ConcurrentDictionary<string, CachedFile>(StringComparer.Ordinal);
         }
 
         public HttpResponse Handle(IHttpRequest req)
         {
-            var fullName = GetFileFullName(req);
-            var fileInfo = new FileInfo(fullName);
+            var requestedFilename = HttpUtility.UrlDecode(req.Path.Substring(reqPathFilenameStartIndex));
+            var absFilename = Path.GetFullPath(Path.Combine(directory, requestedFilename));
+            if (!absFilename.StartsWith(directory))
+            {
+                return Forbidden;
+            }
 
+            var fileInfo = new FileInfo(absFilename);
             if (!fileInfo.Exists) // cached but deleted
             {
                 return NotFound;
@@ -80,54 +67,35 @@ namespace m.Http.Handlers
 
             DateTime ifModifiedSince;
             CachedFile cachedFile;
+            HttpResponse response;
 
-            var checkLastModified = req.TryGetIfLastModifiedSince(out ifModifiedSince); // remote client has a cached version
-            var hasCachedResponse = checkLastModified ? TryGetCachedFileResponse(fullName, ifModifiedSince, out cachedFile) : TryGetCachedFileResponse(fullName, out cachedFile);
-
-            if (hasCachedResponse && fileInfo.LastWriteTimeUtc <= cachedFile.LastModified)
+            if (req.TryGetIfLastModifiedSince(out ifModifiedSince) && fileInfo.LastWriteTimeUtc <= ifModifiedSince)
             {
-                if (checkLastModified)
+                // Remote client (browser) has a valid cached copy (we may not have it in cache yet though eg. server restarted)
+                response = new HttpResponse(HttpStatusCode.NotModified, MimeMapping.GetMimeMapping(fileInfo.Name));
+            }
+            else if (cache.TryGetValue(absFilename, out cachedFile) && fileInfo.LastWriteTimeUtc <= cachedFile.LastModified)
+            {
+                // Dictionary cached copy is still valid
+                response = req.IsAcceptGZip() ? cachedFile.GZippedResponse : cachedFile.Response;
+            }
+            else
+            {
+                // Load fresh from disk
+                if (fileInfo.Length <= maxFileLengthToCache)
                 {
-                    return NotChanged(cachedFile.ContentType);
+                    var fileResponse = new FileResponse.Buffered(fileInfo);
+                    var gzippedFileResponse = gzipFunc(fileResponse);
+                    cache[absFilename] = new CachedFile(fileResponse, gzippedFileResponse);
+                    response = req.IsAcceptGZip() ? gzippedFileResponse : fileResponse;
                 }
                 else
                 {
-                    return req.IsAcceptGZip() && cachedFile.GZippedResponse != null ? cachedFile.GZippedResponse : cachedFile.Response;
+                    response = new FileResponse.Stream(fileInfo);
                 }
             }
-            else
-            {
-                var fileResponse = new FileResponse(fileInfo);
 
-                cachedFile = new CachedFile(fileResponse, gzipFunc != null ? fileResponse.GZip(gzipFunc) : null);
-                cache[fullName] = cachedFile;
-
-                return req.IsAcceptGZip() && cachedFile.GZippedResponse != null ? cachedFile.GZippedResponse : cachedFile.Response;
-            }
+            return response;
         }
-
-        string GetFileFullName(IHttpRequest req)
-        {
-            var filename = HttpUtility.UrlDecode(req.Path.Substring(pathFilenameStartIndex));
-            var fullPath = Path.Combine(directory, filename);
-
-            if (fullPath.StartsWith(directory))
-            {
-                return fullPath;
-            }
-            else
-            {
-                throw new RequestException("Illegal file access", HttpStatusCode.Forbidden);
-            }
-        }
-
-        bool TryGetCachedFileResponse(string fullName, out CachedFile cached) => cache.TryGetValue(fullName, out cached);
-
-        bool TryGetCachedFileResponse(string filename, DateTime ifModifiedSince, out CachedFile cached)
-        {
-            return cache.TryGetValue(filename, out cached) && cached.LastModified <= ifModifiedSince;
-        }
-
-        static HttpResponse NotChanged(string contentType) => new HttpResponse(HttpStatusCode.NotModified, contentType); //TODO: cache
     }
 }

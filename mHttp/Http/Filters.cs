@@ -1,23 +1,45 @@
 ﻿using System;
+using System.Collections.Generic;
 
 using m.Http.Extensions;
 using m.Utils;
 
 namespace m.Http
 {
-    using SyncResponseFilter = Func<IHttpRequest, HttpResponse, HttpResponse>;
+    using ResponseFilter = Func<IHttpRequest, HttpResponse, HttpResponse>;
+    // using AsyncResponseFilter = Func<IHttpRequest, HttpResponse, Task<HttpResponse>>;
 
     public static class Filters
     {
-        static readonly SyncResponseFilter defaultGZipFilter = GZip(Compression.GZip);
-
-        public static HttpResponse GZip(IHttpRequest req, HttpResponse resp) => defaultGZipFilter(req, resp);
-
-        public static SyncResponseFilter GZip(Func<byte[], byte[]> gzipFunc)
+        //TODO: will be needing a GZippedResponse (for large underlying streams)
+        internal static HttpResponse GZipFunc(HttpResponse origResp)
         {
-            //FIXME: only gzip text, json, caller be aware (of penalty/cache implications) etc.
-            //TODO: check if already gzipped when explicit filter phase added
-            return (req, resp) => req.IsAcceptGZip() && resp?.Body.Length > 0 ? resp.GZip(gzipFunc) : resp;
+            var byteArrayBody = origResp.Body as HttpBody.ByteArray;
+            if (byteArrayBody != null)
+            {
+                var newHeaders = new Dictionary<string, string>(origResp.Headers, StringComparer.OrdinalIgnoreCase)
+                {
+                    { HttpHeader.ContentEncoding, HttpHeaderValue.GZip }
+                };
+
+                return new HttpResponse(origResp.StatusCode,
+                                        origResp.StatusDescription,
+                                        origResp.ContentType,
+                                        newHeaders,
+                                        new HttpBody.ByteArray(Compression.GZip(byteArrayBody.Bytes)));
+            }
+
+            //TODO: if body is a HttpBody.Streamable
+
+            return origResp; // pass-through (unzipped) for now
+        }
+
+        public static HttpResponse GZip(IHttpRequest req, HttpResponse resp) => GZip(GZipFunc)(req, resp);
+
+        public static ResponseFilter GZip(Func<HttpResponse, HttpResponse> gzipFunc)
+        {
+            //TODO: more guards (eg. current contentType / already gzipped / etc)
+            return (req, resp) => req.IsAcceptGZip() && resp.Body.Length > 0 ? gzipFunc(resp) : resp;
         }
     }
 }

@@ -52,8 +52,9 @@ namespace m.Http.Backend.Tcp
                                 Action<int> onBytesReceived,
                                 Action<int> onBytesSent,
                                 Action onDisposed,
-                                int initialReadBufferSize=1024,
-                                int writeTimeoutMs=5000) : base(id, tcpClient, stream, initialReadBufferSize, writeTimeoutMs)
+                                int initialReadBufferSize,
+                                int readTimeoutMs,
+                                int writeTimeoutMs) : base(id, tcpClient, stream, initialReadBufferSize, readTimeoutMs, writeTimeoutMs)
         {
             this.onBytesReceived = onBytesReceived;
             this.onBytesSent = onBytesSent;
@@ -189,7 +190,7 @@ namespace m.Http.Backend.Tcp
                 int bytesRead;
                 try
                 {
-                    bytesRead = await ReadToBufferAsync();
+                    bytesRead = await ReadToBufferAsync().ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {

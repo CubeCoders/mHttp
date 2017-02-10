@@ -22,10 +22,6 @@ namespace m.Http
         public static EndpointBuilder Put(string route) => new EndpointBuilder(Method.PUT, route);
 
         public static EndpointBuilder Delete(string route) => new EndpointBuilder(Method.DELETE, route);
-
-        [Obsolete] public static Endpoint ServeDirectory(string route, string directory) => ServeDirectory(route, directory, Compression.GZip);
-
-        [Obsolete] public static Endpoint ServeDirectory(string route, string directory, Func<byte[], byte[]> gzipFunc) => Get(route).With(new StaticFileHandler(route, directory, gzipFunc).Handle);
     }
 
     public sealed class EndpointBuilder
@@ -55,9 +51,9 @@ namespace m.Http
 
         public Endpoint WithAsync(Func<IHttpRequest, Task<HttpResponse>> f) => new Endpoint(Method, Route, f);
 
-        public Endpoint With(DirectoryInfo dirInfo) => With(dirInfo, Compression.GZip);
+        public Endpoint With(DirectoryInfo dirInfo) => With(dirInfo, Filters.GZipFunc);
 
-        public Endpoint With(DirectoryInfo dirInfo, Func<byte[], byte[]> gzipFuncImpl)
+        public Endpoint With(DirectoryInfo dirInfo, Func<HttpResponse, HttpResponse> gzipFuncImpl)
         {
             if (dirInfo.Exists)
             {
@@ -100,7 +96,7 @@ namespace m.Http
         public static Endpoint ApplyResponseFilter(this Endpoint ep, Func<IHttpRequest, HttpResponse, HttpResponse> filter)
         {
             AsyncRequestHandler filteredHandler = async req => {
-                var originalResp = await ep.Handler(req);
+                var originalResp = await ep.Handler(req).ConfigureAwait(false);
                 var filteredResp = filter(req, originalResp);
                 return filteredResp;
             };
@@ -111,8 +107,8 @@ namespace m.Http
         public static Endpoint ApplyAsyncResponseFilter(this Endpoint ep, Func<IHttpRequest, HttpResponse, Task<HttpResponse>> asyncFilter)
         {
             AsyncRequestHandler filteredHandler = async req => {
-                var originalResp = await ep.Handler(req);
-                var filteredResp = await asyncFilter(req, originalResp);
+                var originalResp = await ep.Handler(req).ConfigureAwait(false);
+                var filteredResp = await asyncFilter(req, originalResp).ConfigureAwait(false);
                 return filteredResp;
             };
 
