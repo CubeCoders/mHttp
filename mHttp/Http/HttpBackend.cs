@@ -108,6 +108,7 @@ namespace m.Http
             {
                 timer.Shutdown();
                 listener.Stop();
+                listener.Close();
             }
         }
 
