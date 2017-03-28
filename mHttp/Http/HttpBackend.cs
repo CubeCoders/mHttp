@@ -73,7 +73,7 @@ namespace m.Http
             timer = new WaitableTimer(name,
                                       TimeSpan.FromSeconds(1),
                                       new [] {
-                                          new WaitableTimer.Job("CheckSessionReadTimeouts", CheckSessionReadTimeouts)
+                                          new WaitableTimer.Job(nameof(CheckSessionReadTimeouts), CheckSessionReadTimeouts)
                                       });
         }
 
@@ -108,7 +108,6 @@ namespace m.Http
             {
                 timer.Shutdown();
                 listener.Stop();
-                listener.Close();
             }
         }
 
@@ -199,10 +198,9 @@ namespace m.Http
                         UntrackSessionRead(session.Id);
                     }
 
-                    int requestBytesParsed, responseBytesWritten;
-                    HttpRequest request;
+                    int responseBytesWritten;
 
-                    while (continueRequestLoop && session.TryParseNextRequestFromBuffer(out requestBytesParsed, out request))
+                    while (continueRequestLoop && session.TryParseNextRequestFromBuffer(out int requestBytesParsed, out HttpRequest request))
                     {
                         Router.HandleResult result = await router.HandleRequest(request, DateTime.UtcNow).ConfigureAwait(false);
                         HttpResponse response = result.HttpResponse;
@@ -308,8 +306,7 @@ namespace m.Http
 
         void UntrackSession(long id)
         {
-            HttpSession _;
-            sessionTable.TryRemove(id, out _);
+            sessionTable.TryRemove(id, out HttpSession _);
         }
 
         void TrackSessionRead(long id)
@@ -319,8 +316,7 @@ namespace m.Http
 
         void UntrackSessionRead(long id)
         {
-            long _;
-            sessionReads.TryRemove(id, out _);
+            sessionReads.TryRemove(id, out long _);
         }
 
         void TrackWebSocketSession(WebSocketSession session)
@@ -340,8 +336,7 @@ namespace m.Http
 
         void UntrackWebSocketSession(long id)
         {
-            WebSocketSession _;
-            webSocketSessionTable.TryRemove(id, out _);
+            webSocketSessionTable.TryRemove(id, out WebSocketSession _);
         }
 
         void CheckSessionReadTimeouts()

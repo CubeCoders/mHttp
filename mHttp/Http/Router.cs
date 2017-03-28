@@ -93,8 +93,7 @@ namespace m.Http
 
         void ProcessRequestLogs()
         {
-            IEnumerable<RequestLogs.Log>[][] logs;
-            int drained = requestLogs.Drain(out logs);
+            int drained = requestLogs.Drain(out IEnumerable<RequestLogs.Log>[][] logs);
             if (drained > 0)
             {
                 Metrics.Update(logs);
@@ -136,8 +135,7 @@ namespace m.Http
 
                 //TODO: httpReq = filterChain.FilterRequest(httpReq);
 
-                IReadOnlyDictionary<string, string> pathVariables;
-                if ((endpointIndex = routeTable.TryMatchEndpoint(httpReq.Method, httpReq.Url, out pathVariables)) < 0)
+                if ((endpointIndex = routeTable.TryMatchEndpoint(httpReq.Method, httpReq.Url, out var pathVariables)) < 0)
                 {
                     httpResp = NotFound; // no matching route
                 }

@@ -154,11 +154,8 @@ namespace m.Http.Backend.Tcp
         public async Task<WebSocketMessage> ReadNextMessageAsync()
         {
             while (true)
-            {
-                OpCode opCode;
-                byte[] payload;
-
-                while (TryDecodeNextMessage(out opCode, out payload))
+            { 
+                while (TryDecodeNextMessage(out OpCode opCode, out byte[] payload))
                 {
                     if (closed)
                     {

@@ -7,7 +7,7 @@ namespace m.Http.Backend.Tcp
 {
     class HttpSession : TcpSessionBase
     {
-        readonly bool isSecured;
+        private bool isSecured;
         readonly int maxKeepAlives;
 
         int dataStart = 0;
