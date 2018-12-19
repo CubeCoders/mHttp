@@ -12,13 +12,13 @@ namespace m.Http
 
         public TReq Req { get; private set; }
 
-        public Method Method { get { return req.Method; } }
-        public string ContentType { get { return req.ContentType; } }
-        public IReadOnlyDictionary<string, string> Headers { get { return req.Headers; } }
-        public Uri Url { get { return req.Url; } }
+        public Method Method => req.Method;
+        public string ContentType => req.ContentType;
+        public IReadOnlyDictionary<string, string> Headers => req.Headers;
+        public Uri Url => req.Url;
 
-        public string Path { get { return Url.AbsolutePath; } }
-        public string Query { get { return Url.Query; } }
+        public string Path => Url.AbsolutePath;
+        public string Query => Url.Query;
 
         public IReadOnlyDictionary<string, string> PathVariables { get; private set; }
 
@@ -38,7 +38,7 @@ namespace m.Http
             }
             catch (Exception e)
             {
-                throw new RequestException(string.Format("Error deserializing inputstream to <{0}> - {1}", typeof(TReq).Name, e.Message), e, HttpStatusCode.BadRequest);
+                throw new RequestException($"Error deserializing inputstream to <{typeof(TReq).Name}> - {e.Message}", e, HttpStatusCode.BadRequest);
             }
 
             return new JsonRequest<TReq>(req, reqObj, req.PathVariables);

@@ -6,6 +6,7 @@ using System.Net;
 using NUnit.Framework;
 
 using m.Http.Backend;
+using System.Threading.Tasks;
 
 namespace m.Http
 {
@@ -15,7 +16,7 @@ namespace m.Http
         static readonly IPEndPoint RemoteEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 12345);
         
         [Test]
-        public async void TestRouter()
+        public async Task TestRouter()
         {
             var routeTable = new RouteTable(
                 Route.Get("/").With(() => new TextResponse("root")),

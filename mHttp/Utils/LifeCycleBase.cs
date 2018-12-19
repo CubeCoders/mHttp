@@ -8,8 +8,8 @@ namespace m.Utils
         volatile bool started = false;
         volatile bool shutdown = false;
 
-        public bool IsStarted { get { return started; } }
-        public bool IsShutdown { get { return shutdown; } }
+        public bool IsStarted => started;
+        public bool IsShutdown => shutdown;
 
         protected abstract void OnStart();
         protected abstract void OnShutdown();

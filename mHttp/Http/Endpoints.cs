@@ -38,8 +38,7 @@ namespace m.Http
                 var method = pair.Item1;
                 var endpointAttrb = pair.Item2;
 
-                Func<IHttpRequest, Task<HttpResponse>> handler;
-                if (IsValidEndpointHandler(method, targetClassInstance, out handler))
+                if (IsValidEndpointHandler(method, targetClassInstance, out var handler))
                 {
                     if (endpointAttrb.RequestsPerSecond > 0)
                     {
@@ -58,7 +57,7 @@ namespace m.Http
                 }
                 else
                 {
-                    throw new Exception(string.Format("[{0}.{1}] does not have a recognized endpoint method signature", method.DeclaringType.Name, method.Name));
+                    throw new Exception($"[{method.DeclaringType.Name}.{method.Name}] does not have a recognized endpoint method signature");
                 }
             }
 
@@ -71,11 +70,11 @@ namespace m.Http
             {
                 if (method.IsStatic)
                 {
-                    asHandler = (HandlerSignature1)Delegate.CreateDelegate(typeof(HandlerSignature1), method);
+                    asHandler = (HandlerSignature1)method.CreateDelegate(typeof(HandlerSignature1));
                 }
                 else
                 {
-                    asHandler = (HandlerSignature1)Delegate.CreateDelegate(typeof(HandlerSignature1), targetClassInstance, method);
+                    asHandler = (HandlerSignature1)method.CreateDelegate(typeof(HandlerSignature1), targetClassInstance);
                 }
                     
                 return true;
@@ -89,12 +88,12 @@ namespace m.Http
             {
                 if (method.IsStatic)
                 {
-                    var handler = (HandlerSignature2)Delegate.CreateDelegate(typeof(HandlerSignature2), method);
+                    var handler = (HandlerSignature2)method.CreateDelegate(typeof(HandlerSignature2));
                     asHandler = Handler.From(handler);
                 }
                 else
                 {
-                    var handler = (HandlerSignature2)Delegate.CreateDelegate(typeof(HandlerSignature2), targetClassInstance, method);
+                    var handler = (HandlerSignature2)method.CreateDelegate(typeof(HandlerSignature2), targetClassInstance);
                     asHandler = Handler.From(handler);
                 }
                 return true;
@@ -108,12 +107,12 @@ namespace m.Http
             {
                 if (method.IsStatic)
                 {
-                    var handler = (HandlerSignature3)Delegate.CreateDelegate(typeof(HandlerSignature3), method);
+                    var handler = (HandlerSignature3)method.CreateDelegate(typeof(HandlerSignature3));
                     asHandler = Handler.From(handler);
                 }
                 else
                 {
-                    var handler = (HandlerSignature3)Delegate.CreateDelegate(typeof(HandlerSignature3), targetClassInstance, method);
+                    var handler = (HandlerSignature3)method.CreateDelegate(typeof(HandlerSignature3), targetClassInstance);
                     asHandler = Handler.From(handler);
                 }
                 return true;

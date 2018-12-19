@@ -18,7 +18,7 @@ namespace m.Http.Backend.WebSockets
                 {
                     webSocketVersion = req.GetHeader(HttpHeader.WebSocketVersion);
                     webSocketKey = req.GetHeader(HttpHeader.WebSocketKey);
-                    webSocketExtensions = req.GetHeader(HttpHeader.WebSocketExtensions);
+                    webSocketExtensions = req.Headers.ContainsKey(HttpHeader.WebSocketExtensions) ? req.GetHeader(HttpHeader.WebSocketExtensions) : string.Empty;
                     return true;
                 }
                 else

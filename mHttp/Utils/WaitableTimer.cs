@@ -42,13 +42,10 @@ namespace m.Utils
             Period = period;
             this.jobs = jobs;
             evt = new AutoResetEvent(false);
-            toString = string.Format("{0}@{1}Hz", name, (1000 / Period.TotalMilliseconds));
+            toString = $"{name}@{1000 / Period.TotalMilliseconds}Hz";
         }
 
-        public bool Signal()
-        {
-            return evt.Set();
-        }
+        public bool Signal() => evt.Set();
 
         protected override void OnStart()
         {

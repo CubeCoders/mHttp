@@ -8,8 +8,6 @@ namespace m.Http.Backend.Tcp
 {
     static class HttpResponseWriter
     {
-        static readonly string Server = string.Format("mHttp {0}", Assembly.GetExecutingAssembly().GetName().Version);
-
         public static byte[] GetStatusAndHeaders(int statusCode,
                                                  string statusDescription,
                                                  string contentType,
@@ -22,7 +20,6 @@ namespace m.Http.Backend.Tcp
 
             sb.Append("HTTP/1.1 ").Append(statusCode).Append(" ").Append(statusDescription).Append("\r\n");
 
-            sb.Append("Server: ").Append(Server).Append("\r\n");
             sb.Append("Date: ").Append(DateTime.UtcNow.ToString("R")).Append("\r\n");
             if (!string.IsNullOrEmpty(contentType))
             {
@@ -59,7 +56,6 @@ namespace m.Http.Backend.Tcp
 
             sb.Append("HTTP/1.1 ").Append(statusCode).Append(" ").Append(statusDescription).Append("\r\n");
 
-            sb.Append("Server: ").Append(Server).Append("\r\n");
             sb.Append("Date: ").Append(DateTime.UtcNow.ToString("R")).Append("\r\n");
 
             var acceptKey = Encoding.ASCII.GetBytes(requestKey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
@@ -80,7 +76,6 @@ namespace m.Http.Backend.Tcp
 
             sb.Append("HTTP/1.1 ").Append(statusCode).Append(" ").Append(statusDescription).Append("\r\n");
 
-            sb.Append("Server: ").Append(Server).Append("\r\n");
             sb.Append("Date: ").Append(DateTime.UtcNow.ToString("R")).Append("\r\n");
             sb.Append("Connection: close\r\n");
 

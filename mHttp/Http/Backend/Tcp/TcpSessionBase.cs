@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Net.Sockets;
 
 namespace m.Http.Backend.Tcp
@@ -32,8 +33,14 @@ namespace m.Http.Backend.Tcp
         {
             try
             {
+#if NETSTANDARD
+                Stream.Dispose();
+                TcpClient.Dispose();
+#endif
+#if NET452
                 Stream.Close();
                 TcpClient.Close();
+#endif
             }
             catch
             {

@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+
+[assembly: InternalsVisibleTo("mHttp.Tests")]
+[assembly: InternalsVisibleTo("mHttp.Contrib")]
 
 namespace m.Http.Routing
 {
@@ -19,7 +23,7 @@ namespace m.Http.Routing
             templateParts = BuildTemplate(pathTemplate);
             PathTemplate = pathTemplate;
 
-            toString = string.Format("Route({0})", PathTemplate);
+            toString = $"Route({PathTemplate})";
         }
 
         static ITemplatePart[] BuildTemplate(string pathTemplate)
@@ -37,8 +41,10 @@ namespace m.Http.Routing
             var match = TemplateRegex.Match(pathTemplate);
             if (match.Success)
             {
-                var templateParts = new List<ITemplatePart>();
-                templateParts.Add(new Literal("/"));
+                var templateParts = new List<ITemplatePart>
+                {
+                    new Literal("/")
+                };
 
                 var stringParts = pathTemplate.Split('/');
 
@@ -73,7 +79,7 @@ namespace m.Http.Routing
             }
             else
             {
-                throw new ArgumentException(string.Format("Must match regex pattern {0}", TemplateRegex), "pathTemplate");
+                throw new ArgumentException($"Must match regex pattern {TemplateRegex}", "pathTemplate");
             }
         }
 
@@ -136,8 +142,7 @@ namespace m.Http.Routing
                     var j = 1;
                     while (j < segments.Length && j < templateParts.Length)
                     {
-                        var variablePart = templateParts[j] as Variable;
-                        if (variablePart != null)
+                        if (templateParts[j] is Variable variablePart)
                         {
                             var segment = segments[j];
                             var segmentLength = segment.Length;
@@ -191,9 +196,6 @@ namespace m.Http.Routing
             return 0;
         }
 
-        public override string ToString()
-        {
-            return toString;
-        }
+        public override string ToString() => toString;
     }
 }

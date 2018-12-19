@@ -23,15 +23,12 @@ namespace m.Http.Backend.Tcp
             var request = new MemoryStream(8192);
             var buffer = request.GetBuffer();
             var start = 0;
-
-            int lineStart, lineEnd;
-
             request.WriteAscii("User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:42.0) Gecko/20100101 Firefox/42.0\n");
             request.WriteAscii("Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n");
             request.WriteAscii("Accept-language: en-US;q=0.7,en;q=0.3\n");
             request.WriteAscii("Connection: close\r\n");
 
-            Assert.IsTrue(RequestParser.TryReadLine(buffer, ref start, (int)request.Length, out lineStart, out lineEnd));
+            Assert.IsTrue(RequestParser.TryReadLine(buffer, ref start, (int)request.Length, out int lineStart, out int lineEnd));
             var line = Encoding.ASCII.GetString(buffer, lineStart, lineEnd);
             Assert.AreEqual("User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:42.0) Gecko/20100101 Firefox/42.0", line);
         }
@@ -42,10 +39,7 @@ namespace m.Http.Backend.Tcp
             var request = new MemoryStream(8192);
             var buffer = request.GetBuffer();
             var start = 0;
-
-            int lineStart, lineEnd;
-
-            Assert.IsFalse(RequestParser.TryReadLine(buffer, ref start, (int)request.Length, out lineStart, out lineEnd));
+            Assert.IsFalse(RequestParser.TryReadLine(buffer, ref start, (int)request.Length, out int lineStart, out int lineEnd));
 
             request.WriteAscii("\r\n");
             Assert.IsTrue(RequestParser.TryReadLine(buffer, ref start, (int)request.Length, out lineStart, out lineEnd));
@@ -65,16 +59,9 @@ namespace m.Http.Backend.Tcp
             var request = new MemoryStream(8192);
             var buffer = request.GetBuffer();
             var start = 0;
-
-            int lineStart, lineEnd;
-
             request.WriteAscii("POST /accounts?flag=x HTTP/1.1\r\n");
-            Assert.IsTrue(RequestParser.TryReadLine(buffer, ref start, (int)request.Length, out lineStart, out lineEnd));
-
-            Method method;
-            string path, query, version;
-
-            RequestParser.ParseRequestLine(buffer, lineStart, lineEnd, out method, out path, out query, out version);
+            Assert.IsTrue(RequestParser.TryReadLine(buffer, ref start, (int)request.Length, out int lineStart, out int lineEnd));
+            RequestParser.ParseRequestLine(buffer, lineStart, lineEnd, out Method method, out string path, out string query, out string version);
             Assert.AreEqual(Method.POST, method);
             Assert.AreEqual("/accounts", path);
             Assert.AreEqual("?flag=x", query);
@@ -87,16 +74,9 @@ namespace m.Http.Backend.Tcp
             var request = new MemoryStream(8192);
             var buffer = request.GetBuffer();
             var start = 0;
-
-            int lineStart, lineEnd;
-
             request.WriteAscii("POST /accounts? HTTP/1.1\r\n");
-            Assert.IsTrue(RequestParser.TryReadLine(buffer, ref start, (int)request.Length, out lineStart, out lineEnd));
-
-            Method method;
-            string path, query, version;
-
-            RequestParser.ParseRequestLine(buffer, lineStart, lineEnd, out method, out path, out query, out version);
+            Assert.IsTrue(RequestParser.TryReadLine(buffer, ref start, (int)request.Length, out int lineStart, out int lineEnd));
+            RequestParser.ParseRequestLine(buffer, lineStart, lineEnd, out Method method, out string path, out string query, out string version);
             Assert.AreEqual(Method.POST, method);
             Assert.AreEqual("/accounts", path);
             Assert.AreEqual("?", query);
@@ -109,14 +89,9 @@ namespace m.Http.Backend.Tcp
             var request = new MemoryStream(8192);
             var buffer = request.GetBuffer();
             var start = 0;
-
-            int lineStart, lineEnd;
-
             request.WriteAscii("Host : localhost:8080\r\n");
-            Assert.IsTrue(RequestParser.TryReadLine(buffer, ref start, (int)request.Length, out lineStart, out lineEnd));
-
-            string name, value;
-            RequestParser.ParseHeader(buffer, lineStart, lineEnd, out name, out value);
+            Assert.IsTrue(RequestParser.TryReadLine(buffer, ref start, (int)request.Length, out int lineStart, out int lineEnd));
+            RequestParser.ParseHeader(buffer, lineStart, lineEnd, out string name, out string value);
             Assert.AreEqual("Host", name);
             Assert.AreEqual("localhost:8080", value);
         }
@@ -150,8 +125,7 @@ namespace m.Http.Backend.Tcp
             request.WriteAscii("Accept: */*\r\n");
 
             var state = new HttpRequest(RemoteEndPoint, false);
-            HttpRequest httpRequest;
-            Assert.IsFalse(RequestParser.TryParseHttpRequest(buffer, ref start, (int)request.Length, state, out httpRequest));
+            Assert.IsFalse(RequestParser.TryParseHttpRequest(buffer, ref start, (int)request.Length, state, out HttpRequest httpRequest));
 
             request.WriteAscii("\r\n");
             Assert.IsTrue(RequestParser.TryParseHttpRequest(buffer, ref start, (int)request.Length, state, out httpRequest));
@@ -174,8 +148,7 @@ namespace m.Http.Backend.Tcp
             request.WriteAscii(@"{ ""username"" : ""test"" }");
 
             var state = new HttpRequest(RemoteEndPoint, false);
-            HttpRequest httpRequest;
-            Assert.IsTrue(RequestParser.TryParseHttpRequest(buffer, ref start, (int)request.Length, state, out httpRequest));
+            Assert.IsTrue(RequestParser.TryParseHttpRequest(buffer, ref start, (int)request.Length, state, out HttpRequest httpRequest));
             Assert.AreEqual(Method.POST, httpRequest.Method);
             Assert.AreEqual("http://localhost:8080/accounts/create", httpRequest.Url.AbsoluteUri);
 

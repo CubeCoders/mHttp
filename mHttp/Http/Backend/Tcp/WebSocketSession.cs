@@ -32,7 +32,7 @@ namespace m.Http.Backend.Tcp
         OpCode frameOpCode;
         bool isFin, isMasked;
         int framePayloadLength;
-        byte[] mask;
+        readonly byte[] mask;
         #endregion
 
         #region Message states (only for [Text|Binary])
@@ -44,7 +44,7 @@ namespace m.Http.Backend.Tcp
         volatile bool sentClose = false;
         volatile bool closed = false;
 
-        public bool IsOpen { get { return !closed; } }
+        public bool IsOpen => !closed;
 
         public WebSocketSession(long id,
                                 TcpClient tcpClient,
@@ -159,7 +159,7 @@ namespace m.Http.Backend.Tcp
                 {
                     if (closed)
                     {
-                        throw new WebSocketException(string.Format("Session already closed (dropping received message:[{0}] payloadLength:[{1}])", opCode, payload.Length));
+                        throw new WebSocketException($"Session already closed (dropping received message:[{opCode}] payloadLength:[{payload.Length}])");
                     }
 
                     switch (opCode)
@@ -273,7 +273,15 @@ namespace m.Http.Backend.Tcp
                 {
                     lock (stateLock)
                     {
+#if NETSTANDARD
+                        if (!ms.TryGetBuffer(out var buffer))
+                        {
+                            Write(buffer.Array, 0, bytesWritten);
+                        }
+#endif
+#if NET452
                         Write(ms.GetBuffer(), 0, bytesWritten);
+#endif
                         onBytesSent(bytesWritten);
                     }
                 }

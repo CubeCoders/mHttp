@@ -31,7 +31,7 @@ namespace m.Http
         readonly IndexedEndpoint[] putEndpoints;
         readonly IndexedEndpoint[] deleteEndpoints;
 
-        public int Length { get { return allEndpoints.Length; } }
+        public int Length => allEndpoints.Length;
         public Endpoint this[int EndpointIndex] { get { return allEndpoints[EndpointIndex]; } }
 
         public RouteTable(params Endpoint[] endpoints) : this("*", endpoints) { }
@@ -55,15 +55,9 @@ namespace m.Http
             deleteEndpoints = indexedEndpoints.Where(e => e.Endpoint.Method == Method.DELETE).ToArray();
         }
 
-        public IEnumerator<Endpoint> GetEnumerator()
-        {
-            return ((IEnumerable<Endpoint>)allEndpoints).GetEnumerator();
-        }
+        public IEnumerator<Endpoint> GetEnumerator() => ((IEnumerable<Endpoint>)allEndpoints).GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public bool MatchRequestedHost(string requestedHost)
         {
@@ -107,7 +101,7 @@ namespace m.Http
                 case Method.DELETE : eps = deleteEndpoints; break;
 
                 default:
-                    throw new NotSupportedException(string.Format("Unrecognized http method:[{0}]", method));
+                    throw new NotSupportedException($"Unrecognized http method:[{method}]");
             }
 
             for (var i=0; i<eps.Length; i++)

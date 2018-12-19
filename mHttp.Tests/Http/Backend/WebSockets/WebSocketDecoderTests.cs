@@ -14,12 +14,9 @@ namespace m.Http.Backend.WebSockets
             var frame = new byte[] { 0x81, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f }; // "Hello"
 
             int start = 0;
-            bool isFin, isMasked;
-            OpCode opCode;
             var mask = new byte[4];
-            int payloadLength;
 
-            Assert.IsTrue(FrameDecoder.TryDecodeHeader(frame, ref start, frame.Length, out isFin, out opCode, out isMasked, out payloadLength, mask));
+            Assert.IsTrue(FrameDecoder.TryDecodeHeader(frame, ref start, frame.Length, out bool isFin, out OpCode opCode, out bool isMasked, out int payloadLength, mask));
             Assert.IsTrue(isFin);
             Assert.AreEqual(OpCode.Text, opCode);
             Assert.IsFalse(isMasked);
@@ -34,14 +31,11 @@ namespace m.Http.Backend.WebSockets
         public void TestTryDecodeMaskedText()
         {
             int start = 0;
-            bool isFin, isMasked;
-            OpCode opCode;
             var mask = new byte[4];
-            int payloadLength;
 
             var frame = new byte[] { 0x81, 0x85, 0x37, 0xfa, 0x21, 0x3d, 0x7f, 0x9f, 0x4d, 0x51, 0x58 }; // "Hello"
 
-            Assert.IsTrue(FrameDecoder.TryDecodeHeader(frame, ref start, frame.Length, out isFin, out opCode, out isMasked, out payloadLength, mask));
+            Assert.IsTrue(FrameDecoder.TryDecodeHeader(frame, ref start, frame.Length, out bool isFin, out OpCode opCode, out bool isMasked, out int payloadLength, mask));
             Assert.IsTrue(isFin);
             Assert.AreEqual(OpCode.Text, opCode);
             Assert.IsTrue(isMasked);
@@ -56,14 +50,11 @@ namespace m.Http.Backend.WebSockets
         public void TestTryDecodeFragmentedUnmaskedText()
         {
             int start = 0;
-            bool isFin, isMasked;
-            OpCode opCode;
             var mask = new byte[4];
-            int payloadLength;
 
             var frame0 = new byte[] { 0x01, 0x03, 0x48, 0x65, 0x6c }; // "Hel"
 
-            Assert.IsTrue(FrameDecoder.TryDecodeHeader(frame0, ref start, frame0.Length, out isFin, out opCode, out isMasked, out payloadLength, mask));
+            Assert.IsTrue(FrameDecoder.TryDecodeHeader(frame0, ref start, frame0.Length, out bool isFin, out OpCode opCode, out bool isMasked, out int payloadLength, mask));
             Assert.IsFalse(isFin);
             Assert.AreEqual(OpCode.Text, opCode);
             Assert.IsFalse(isMasked);

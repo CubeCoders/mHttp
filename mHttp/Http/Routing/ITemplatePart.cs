@@ -11,9 +11,9 @@
 
         public Literal(string value) { Value = value; }
 
-        public int CompareWeight { get { return 1; } }
+        public int CompareWeight => 1;
 
-        public override string ToString() { return string.Format("Literal({0})", Value); }
+        public override string ToString() => $"Literal({Value})";
     }
 
     class Variable : ITemplatePart
@@ -22,9 +22,9 @@
 
         public Variable(string name) { Name = name; }
 
-        public int CompareWeight { get { return 2; } }
+        public int CompareWeight => 2;
 
-        public override string ToString() { return string.Format("Variable({0})", Name); }
+        public override string ToString() => $"Variable({Name})";
     }
 
     class Wildcard : ITemplatePart
@@ -33,8 +33,8 @@
 
         Wildcard() { }
 
-        public int CompareWeight { get { return 3; } }
+        public int CompareWeight => 3;
 
-        public override string ToString() { return string.Format("Wildcard"); }
+        public override string ToString() => "Wildcard";
     }
 }

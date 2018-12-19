@@ -1,8 +1,11 @@
 mHttp.userprefs
 bin/
 obj/
-
-/.vs/mHttp/v14/.suo
+.vs/
+.vs
+.suo
+.sqlite
+*/.vs
 /packages/NuGet.CommandLine.3.4.3
 /mHttp/packages.config
 /mHttp/mHttp.nuspec

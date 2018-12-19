@@ -48,7 +48,7 @@ namespace m.Http.Metrics
         readonly object drainLock = new object();
         readonly Queue<Log>[][] drainBuffers; // by [RouteTableIndex][EndpointIndex]
 
-        public int Count { get { return queue.Count; } }
+        public int Count => queue.Count;
 
         public RequestLogs(Router router, int capacity)
         {
@@ -86,8 +86,7 @@ namespace m.Http.Metrics
                     }
 
                     var taken = 0;
-                    IndexedLog log;
-                    while (taken < capacity && queue.TryTake(out log))
+                    while (taken < capacity && queue.TryTake(out IndexedLog log))
                     {
                         drainBuffers[log.RouteTableIndex][log.EndpointIndex].Enqueue(log);
                         taken++;

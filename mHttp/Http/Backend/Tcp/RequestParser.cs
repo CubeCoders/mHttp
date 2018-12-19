@@ -73,8 +73,7 @@ namespace m.Http.Backend.Tcp
                                             out string query,
                                             out string version)
         {
-            int matchedIndex;
-            if (!buffer.TryExactMatches(ref lineStart, lineEnd, MethodsBytes, out matchedIndex))
+            if (!buffer.TryExactMatches(ref lineStart, lineEnd, MethodsBytes, out int matchedIndex))
             {
                 throw new ParseRequestException("Invalid request line (method)");
             }
@@ -119,9 +118,7 @@ namespace m.Http.Backend.Tcp
                                                out string query,
                                                out string version)
         {
-            int lineStart, lineEnd;
-
-            if (TryReadLine(buffer, ref start, end, out lineStart, out lineEnd))
+            if (TryReadLine(buffer, ref start, end, out int lineStart, out int lineEnd))
             {
                 ParseRequestLine(buffer, lineStart, lineEnd, out method, out path, out query, out version);
                 return true;
@@ -152,14 +149,14 @@ namespace m.Http.Backend.Tcp
 
             if (!buffer.TryMatchMany(ref lineStart, lineEnd, HeaderNameBytesAllowed, out name))
             {
-                throw new ParseRequestException(string.Format("Invalid header name - '{0}'", GetLineForDebug(buffer, headerLineStart, lineEnd, 128)));
+                throw new ParseRequestException($"Invalid header name - '{GetLineForDebug(buffer, headerLineStart, lineEnd, 128)}'");
             }
 
             buffer.TryMatchSpaces(ref lineStart, lineEnd);
 
             if (!buffer.TryMatch(ref lineStart, COLON))
             {
-                throw new ParseRequestException(string.Format("Invalid header line (expecting colon) - '{0}'", GetLineForDebug(buffer, headerLineStart, lineEnd, 128)));
+                throw new ParseRequestException($"Invalid header line (expecting colon) - '{GetLineForDebug(buffer, headerLineStart, lineEnd, 128)}'");
             }
 
             buffer.TryMatchSpaces(ref lineStart, lineEnd);
@@ -172,16 +169,14 @@ namespace m.Http.Backend.Tcp
                                            int end,
                                            Action<string, string> onHeader)
         {
-            int lineStart, lineEnd;
-            while (TryReadLine(buffer, ref start, end, out lineStart, out lineEnd))
+            while (TryReadLine(buffer, ref start, end, out int lineStart, out int lineEnd))
             {
                 if (lineStart == lineEnd)
                 {
                     return true;
                 }
 
-                string name, value;
-                ParseHeader(buffer, lineStart, lineEnd, out name, out value);
+                ParseHeader(buffer, lineStart, lineEnd, out string name, out string value);
                 onHeader(name, value);
             }
 
@@ -195,7 +190,7 @@ namespace m.Http.Backend.Tcp
             var connection = state.GetHeaderWithDefault(HttpHeader.Connection, null);
             var isKeepAlive = false;
 
-            var url = new Uri(string.Format("{0}://{1}{2}", state.IsSecureConnection ? "https" : "http", host, state.Path));
+            var url = new Uri($"{(state.IsSecureConnection ? "https" : "http")}://{host}{state.Path}");
 
             if (connection != null)
             {

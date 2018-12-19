@@ -23,7 +23,7 @@ namespace m.Http.Backend
         public string Path { get; internal set; }
         public IReadOnlyDictionary<string, string> PathVariables { get; internal set; }
         public string Query { get; internal set; }
-        public IReadOnlyDictionary<string, string> Headers { get { return headers; } }
+        public IReadOnlyDictionary<string, string> Headers => headers;
         public string ContentType { get; internal set; }
         public int ContentLength { get; internal set; }
 
@@ -78,27 +78,24 @@ namespace m.Http.Backend
 
         public string GetHeader(string nameIgnoreCase)
         {
-            string value;
-
-            if (headers.TryGetValue(nameIgnoreCase, out value))
+            if (headers.TryGetValue(nameIgnoreCase, out string value))
             {
                 if (value == string.Empty)
                 {
-                    throw new RequestException(string.Format("'{0}' header cannot be empty", nameIgnoreCase), HttpStatusCode.BadRequest);
+                    throw new RequestException($"'{nameIgnoreCase}' header cannot be empty", HttpStatusCode.BadRequest);
                 }
 
                 return value;
             }
             else
             {
-                throw new RequestException(string.Format("'{0}' header not found", nameIgnoreCase), HttpStatusCode.BadRequest);
+                throw new RequestException($"'{nameIgnoreCase}' header not found", HttpStatusCode.BadRequest);
             }
         }
 
         public string GetHeaderWithDefault(string nameIgnoreCase, string defaultValue)
         {
-            string value;
-            if (headers.TryGetValue(nameIgnoreCase, out value))
+            if (headers.TryGetValue(nameIgnoreCase, out string value))
             {
                 return value;
             }
@@ -118,8 +115,7 @@ namespace m.Http.Backend
 
         public T GetHeaderWithDefault<T>(string nameIgnoreCase, T defaultValue)
         {
-            string value;
-            if (headers.TryGetValue(nameIgnoreCase, out value))
+            if (headers.TryGetValue(nameIgnoreCase, out string value))
             {
                 var converter = TypeDescriptor.GetConverter(typeof(T));
                 return (T)converter.ConvertFromString(value);
@@ -132,9 +128,7 @@ namespace m.Http.Backend
 
         WebSocketUpgradeResponse.AcceptUpgradeResponse IWebSocketUpgradeRequest.AcceptUpgrade(Action<IWebSocketSession> onAccepted)
         {
-            string version, key, extensions;
-
-            if (this.IsWebSocketUpgradeRequest(out version, out key, out extensions))
+            if (this.IsWebSocketUpgradeRequest(out var version, out var key, out var extensions))
             {
                 return new WebSocketUpgradeResponse.AcceptUpgradeResponse(version, key, extensions, onAccepted);
             }
@@ -144,25 +138,6 @@ namespace m.Http.Backend
             }
         }
 
-        WebSocketUpgradeResponse.RejectUpgradeResponse IWebSocketUpgradeRequest.RejectUpgrade(HttpStatusCode reason)
-        {
-            return new WebSocketUpgradeResponse.RejectUpgradeResponse(reason);
-        }
-
-        public static implicit operator HttpRequest(HttpListenerRequest req)
-        {
-            return new HttpRequest(req.RemoteEndPoint,
-                                   req.IsSecureConnection,
-                                   req.Headers.Get("Host"), //TODO: nullable?
-                                   req.GetMethod(),
-                                   req.Url,
-                                   req.Url.AbsolutePath,
-                                   req.Url.Query,
-                                   req.Headers.AllKeys.ToDictionary(k => k, k => req.Headers[k], StringComparer.OrdinalIgnoreCase),
-                                   req.ContentType,
-                                   (int)req.ContentLength64,
-                                   req.KeepAlive,
-                                   req.InputStream);
-        }
+        WebSocketUpgradeResponse.RejectUpgradeResponse IWebSocketUpgradeRequest.RejectUpgrade(HttpStatusCode reason) => new WebSocketUpgradeResponse.RejectUpgradeResponse(reason);
     }
 }

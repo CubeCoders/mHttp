@@ -38,11 +38,11 @@ namespace m.Config
         {
             var configMapEntries = GetConfigMap<TConf>();
             var entriesToApply = configMapEntries.Select(e => new {
-                                                      Property = e.Property,
-                                                      Converter = e.Converter,
-                                                      EnvironmentValueString = e.EnvironmentVariable.GetEnvironmentValue()
-                                                  })
-                                                 .Where(e => !string.IsNullOrEmpty(e.EnvironmentValueString));
+                                        e.Property,
+                                        e.Converter,
+                                        EnvironmentValueString = e.EnvironmentVariable.GetEnvironmentValue()
+                                    })
+                                    .Where(e => !string.IsNullOrEmpty(e.EnvironmentValueString));
 
             foreach (var entry in entriesToApply)
             {
@@ -53,9 +53,7 @@ namespace m.Config
                 }
                 catch (Exception e)
                 {
-                    throw new ArgumentException(string.Format("Error setting property:[{0}] with environment value:[{1}] for conf object of type:[{2}]",
-                                                              entry.Property.Name, entry.EnvironmentValueString, typeof(TConf)),
-                                                e);
+                    throw new ArgumentException($"Error setting property:[{entry.Property.Name}] with environment value:[{entry.EnvironmentValueString}] for conf object of type:[{typeof(TConf)}]", e);
                 }
             }
         }

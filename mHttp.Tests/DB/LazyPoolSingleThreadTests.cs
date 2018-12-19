@@ -17,8 +17,7 @@ namespace m.DB
         }
 
         [Test]
-        [ExpectedException(typeof(TimeoutException))]
-        public async void TestGetTimeout()
+        public async Task TestGetTimeout()
         {
             var p1 = await pool.GetAsync();
             var p2 = await pool.GetAsync();
@@ -27,11 +26,11 @@ namespace m.DB
             Assert.AreEqual(2, p2.Resource.Id);
             Assert.AreEqual(2, pool.maxThingId);
 
-            await pool.GetAsync(); // Timesout
+            Assert.ThrowsAsync<TimeoutException>(async () => await pool.GetAsync()); // Timesout
         }
 
         [Test]
-        public async void TestDispose()
+        public async Task TestDispose()
         {
             var get1 = pool.GetAsync();
             var get2 = pool.GetAsync();
@@ -57,8 +56,7 @@ namespace m.DB
         }
 
         [Test]
-        [ExpectedException(typeof(ObjectDisposedException))]
-        public async void TestDisposeMultipleTimes()
+        public async Task TestDisposeMultipleTimes()
         {
             var p1 = await pool.GetAsync();
             Assert.AreEqual(1, p1.Resource.Id);
@@ -68,11 +66,11 @@ namespace m.DB
             Assert.DoesNotThrow(p1.Dispose);
             Assert.DoesNotThrow(p1.Dispose);
 
-            Assert.AreEqual(1, p1.Resource.Id);; // exception
+            Assert.Throws<ObjectDisposedException>(() => Assert.AreEqual(1, p1.Resource.Id));// exception
         }
 
         [Test]
-        public async void TestReturnBrokenResource()
+        public async Task TestReturnBrokenResource()
         {
             var p1 = await pool.GetAsync();
             var p2 = await pool.GetAsync();

@@ -52,7 +52,7 @@ namespace m.Http.Backend
     {
         readonly MemoryStream requestBody;
 
-        public override long Length { get { return requestBody.Length; } }
+        public override long Length => requestBody.Length;
 
         public MemoryRequestStream(int contentLength)
         {

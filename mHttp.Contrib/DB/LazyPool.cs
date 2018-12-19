@@ -20,8 +20,8 @@ namespace m.DB
         int currentPoolSize;
         int currentFreeCount;
 
-        public int CurrentPoolSize { get { return Thread.VolatileRead(ref currentPoolSize); } }
-        public int CurrentFreeCount { get { return Thread.VolatileRead(ref currentFreeCount); } }
+        public int CurrentPoolSize => Thread.VolatileRead(ref currentPoolSize);
+        public int CurrentFreeCount => Thread.VolatileRead(ref currentFreeCount);
 
         protected LazyPool(string label, int maxPoolSize, TimeSpan poolTimeout)
         {
@@ -76,12 +76,12 @@ namespace m.DB
                 catch (Exception e)
                 {
                     pool.Release();
-                    throw new Exception(string.Format("{0}: error acquiring new resource - {1}", this, e.Message), e);
+                    throw new Exception($"{this}: error acquiring new resource - {e.Message}", e);
                 }
             }
             else
             {
-                throw new TimeoutException(string.Format("{0}: timeout ({1}) waiting to get PooledResource (pool busy)", this, poolTimeout));
+                throw new TimeoutException($"{this}: timeout ({poolTimeout}) waiting to get PooledResource (pool busy)");
             }
         }
 
@@ -106,9 +106,6 @@ namespace m.DB
             }
         }
 
-        public override string ToString()
-        {
-            return string.Format("{0}({1}:{2}/{3})", GetType().Name, Label, CurrentFreeCount, CurrentPoolSize);
-        }
+        public override string ToString() => $"{GetType().Name}({Label}:{CurrentFreeCount}/{CurrentPoolSize})";
     }
 }

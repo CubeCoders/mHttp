@@ -14,8 +14,7 @@ namespace m.Http
         //TODO: will be needing a GZippedResponse (for large underlying streams)
         internal static HttpResponse GZipFunc(HttpResponse origResp)
         {
-            var byteArrayBody = origResp.Body as HttpBody.ByteArray;
-            if (byteArrayBody != null)
+            if (origResp.Body is HttpBody.ByteArray byteArrayBody)
             {
                 var newHeaders = new Dictionary<string, string>(origResp.Headers, StringComparer.OrdinalIgnoreCase)
                 {

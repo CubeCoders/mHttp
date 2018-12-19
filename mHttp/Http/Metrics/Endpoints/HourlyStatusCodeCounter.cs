@@ -52,15 +52,13 @@ namespace m.Http.Metrics.Endpoints
                 var completedOnTimeHours = log.CompletedOnTimeHours;
                 var statusCode = log.Response.StatusCode;
 
-                ConcurrentDictionary<HttpStatusCode, int> statusCodes;
-                if (!statusCodesByHour.TryGetValue(completedOnTimeHours, out statusCodes))
+                if (!statusCodesByHour.TryGetValue(completedOnTimeHours, out ConcurrentDictionary<HttpStatusCode, int> statusCodes))
                 {
                     statusCodes = new ConcurrentDictionary<HttpStatusCode, int>();
                     statusCodesByHour[completedOnTimeHours] = statusCodes;
                 }
 
-                int count;
-                statusCodes[statusCode] = statusCodes.TryGetValue(statusCode, out count) ? count + 1 : 1;
+                statusCodes[statusCode] = statusCodes.TryGetValue(statusCode, out int count) ? count + 1 : 1;
             }
 
             // Trim 
@@ -80,8 +78,7 @@ namespace m.Http.Metrics.Endpoints
             {
                 foreach (var hourToDelete in hoursToDelete)
                 {
-                    ConcurrentDictionary<HttpStatusCode, int> ignored;
-                    statusCodesByHour.TryRemove(hourToDelete, out ignored);
+                    statusCodesByHour.TryRemove(hourToDelete, out ConcurrentDictionary<HttpStatusCode, int> ignored);
                 }
             }
         }

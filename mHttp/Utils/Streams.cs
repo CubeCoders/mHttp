@@ -28,20 +28,11 @@ namespace m.Utils
             return content.Length;
         }
 
-        public static int WriteUTF8(this Stream stream, string content)
-        {
-            return stream.Write(content, Encoding.UTF8);
-        }
+        public static int WriteUTF8(this Stream stream, string content) => stream.Write(content, Encoding.UTF8);
 
-        public static int WriteAscii(this Stream stream, string content)
-        {
-            return stream.Write(content, Encoding.ASCII);
-        }
+        public static int WriteAscii(this Stream stream, string content) => stream.Write(content, Encoding.ASCII);
 
-        public static int WriteAsciiFormat(this Stream stream, string content, params object[] objects)
-        {
-            return stream.Write(string.Format(content, objects), Encoding.ASCII);
-        }
+        public static int WriteAsciiFormat(this Stream stream, string content, params object[] objects) => stream.Write(string.Format(content, objects), Encoding.ASCII);
 
         public static int Write(this Stream stream, string content, Encoding encoding)
         {

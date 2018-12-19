@@ -48,7 +48,9 @@ namespace m.Http.Routing
         [Test]
         public void TestRouteMatching()
         {
+#pragma warning disable IDE0018 // Inline variable declaration
             IReadOnlyDictionary<string, string> pathVariables;
+#pragma warning restore IDE0018 // Inline variable declaration
 
             var r0 = new Route("/");
             Assert.True(r0.TryMatch(new Uri("http://localhost/"), out pathVariables));

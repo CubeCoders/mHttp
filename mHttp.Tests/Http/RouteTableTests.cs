@@ -26,9 +26,8 @@ namespace m.Http
             var routeTable = new RouteTable(ep1, ep2, ep3, ep4, ep5, ep6);
 
             int matchedIndex;
-            IReadOnlyDictionary<string, string> pathVariables;
 
-            matchedIndex = routeTable.TryMatchEndpoint(Method.GET, new Uri("http://localhost/"), out pathVariables);
+            matchedIndex = routeTable.TryMatchEndpoint(Method.GET, new Uri("http://localhost/"), out IReadOnlyDictionary<string, string> pathVariables);
             Assert.AreSame(ep3, routeTable[matchedIndex]);
 
             matchedIndex = routeTable.TryMatchEndpoint(Method.GET, new Uri("http://localhost/accounts/111/data?keys=name"), out pathVariables);

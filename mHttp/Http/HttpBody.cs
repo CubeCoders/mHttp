@@ -31,7 +31,7 @@ namespace m.Http
         public sealed class ByteArray : HttpBody
         {
             public byte[] Bytes { get; }
-            public override long Length { get { return Bytes.Length; } }
+            public override long Length => Bytes.Length;
 
             public ByteArray(byte[] bytes)
             {

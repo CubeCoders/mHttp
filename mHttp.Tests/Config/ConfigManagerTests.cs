@@ -1,5 +1,4 @@
 ﻿using System;
-
 using NUnit.Framework;
 
 namespace m.Config
@@ -47,12 +46,11 @@ namespace m.Config
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
         public void TestLoadException()
         {
             Environment.SetEnvironmentVariable("someTimeout", "01,30,00!");
 
-            ConfigManager.Load<TestConfig>();
+            Assert.Throws<ArgumentException>(() => ConfigManager.Load<TestConfig>());
         }
     }
 }

@@ -2,14 +2,18 @@
 using System.Collections.Concurrent;
 using System.IO;
 using System.Net;
-using System.Web;
 
 using m.Http.Extensions;
+using System.Text.RegularExpressions;
+using m.Logging;
+using MimeKit;
 
 namespace m.Http.Handlers
 {
     public class StaticFileHandler // not threadsafe really, but good for now
     {
+        readonly LoggingProvider.ILogger logger = LoggingProvider.GetLogger(typeof(StaticFileHandler));
+
         class CachedFile
         {
             public FileResponse.Buffered Response { get; }
@@ -50,9 +54,25 @@ namespace m.Http.Handlers
             cache = new ConcurrentDictionary<string, CachedFile>(StringComparer.Ordinal);
         }
 
+        //Matches the protocol part of URLS (http(s)://) or absolute Win32 paths (X:\), or attempts at relative paths (..). 
+        //Linux paths when Path.Combined with the root directory never end up with / so that's fine. (/etc/passwd becomes /mySafeWebroot/etc/passwd) and promptly 404s.
+        private static Regex BadFileRegex = new Regex(@"^[a-z]+:\/\/|[a-z]:\\"); 
+
+        private static bool VerifyPathAcceptable(string filename)
+        {
+            return BadFileRegex.IsMatch(filename);
+        }
+
         public HttpResponse Handle(IHttpRequest req)
         {
-            var requestedFilename = HttpUtility.UrlDecode(req.Path.Substring(reqPathFilenameStartIndex));
+            var requestedFilename = WebUtility.UrlDecode(req.Path.Substring(reqPathFilenameStartIndex));
+
+            if (!VerifyPathAcceptable(requestedFilename))
+            {
+
+                return NotFound;
+            }
+
             var absFilename = Path.GetFullPath(Path.Combine(directory, requestedFilename));
             if (!absFilename.StartsWith(directory))
             {
@@ -65,16 +85,14 @@ namespace m.Http.Handlers
                 return NotFound;
             }
 
-            DateTime ifModifiedSince;
-            CachedFile cachedFile;
             HttpResponse response;
 
-            if (req.TryGetIfLastModifiedSince(out ifModifiedSince) && fileInfo.LastWriteTimeUtc <= ifModifiedSince)
+            if (req.TryGetIfLastModifiedSince(out DateTime ifModifiedSince) && fileInfo.LastWriteTimeUtc <= ifModifiedSince)
             {
                 // Remote client (browser) has a valid cached copy (we may not have it in cache yet though eg. server restarted)
-                response = new HttpResponse(HttpStatusCode.NotModified, MimeMapping.GetMimeMapping(fileInfo.Name));
+                response = new HttpResponse(HttpStatusCode.NotModified, MimeTypes.GetMimeType(fileInfo.Name));
             }
-            else if (cache.TryGetValue(absFilename, out cachedFile) && fileInfo.LastWriteTimeUtc <= cachedFile.LastModified)
+            else if (cache.TryGetValue(absFilename, out CachedFile cachedFile) && fileInfo.LastWriteTimeUtc <= cachedFile.LastModified)
             {
                 // Dictionary cached copy is still valid
                 response = req.IsAcceptGZip() ? cachedFile.GZippedResponse : cachedFile.Response;

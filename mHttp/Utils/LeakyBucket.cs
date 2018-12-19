@@ -24,7 +24,13 @@ namespace m.Utils
 
         public bool Fill(int amount)
         {
-            var current = Thread.VolatileRead(ref currentSize);
+            int current = 0;
+#if NET451
+            current = Thread.VolatileRead(ref currentSize);
+#endif
+#if NETSTANDARD
+            current = Volatile.Read(ref currentSize);
+#endif
             var fillTo = current + amount;
             while (fillTo <= Capacity)
             {

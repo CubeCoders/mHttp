@@ -20,7 +20,7 @@ namespace m.Http.Backend.WebSockets
                     return opCode;
                 
                 default:
-                    throw new WebSocketException(string.Format("Unrecognized opCode:[{0}]", opCode));
+                    throw new WebSocketException($"Unrecognized opCode:[{opCode}]");
             }
         }
 

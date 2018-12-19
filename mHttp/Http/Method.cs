@@ -31,13 +31,8 @@ namespace m.Http
                 case "TRACE"   : return Method.TRACE;
 
                 default:
-                    throw new NotSupportedException(string.Format("{0} method not supported", s));
+                    throw new NotSupportedException($"{s} method not supported");
             }
-        }
-
-        public static Method GetMethod(this HttpListenerRequest req)
-        {
-            return GetMethod(req.HttpMethod);
         }
     }
 }

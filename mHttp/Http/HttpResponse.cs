@@ -4,9 +4,8 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web;
-
 using m.Http.Backend.Tcp;
+using MimeKit;
 
 namespace m.Http
 {
@@ -20,7 +19,7 @@ namespace m.Http
         public string Filename { get; }
         public DateTime LastModified { get; }
 
-        FileResponse(FileInfo fileInfo, HttpBody body) : base(HttpStatusCode.OK, MimeMapping.GetMimeMapping(fileInfo.Name), body)
+        FileResponse(FileInfo fileInfo, HttpBody body) : base(HttpStatusCode.OK, MimeTypes.GetMimeType(fileInfo.Name), body)
         {
             Filename = fileInfo.Name;
             LastModified = fileInfo.LastWriteTimeUtc;
@@ -100,17 +99,16 @@ namespace m.Http
 
                 if (contentLength > 0)
                 {
-                    var disposableBody = Body as IDisposable;
-                    if (disposableBody == null)
-                    {
-                        bytesWritten += await Body.WriteToAsync(toStream).ConfigureAwait(false);
-                    }
-                    else
+                    if (Body is IDisposable disposableBody)
                     {
                         using (disposableBody)
                         {
                             bytesWritten += await Body.WriteToAsync(toStream).ConfigureAwait(false);
                         }
+                    }
+                    else
+                    {
+                        bytesWritten += await Body.WriteToAsync(toStream).ConfigureAwait(false);
                     }
                 }
 

@@ -25,8 +25,7 @@ namespace m.Sample
 
         public HttpResponse Redirect(IHttpRequest req)
         {
-            string userAgent;
-            req.Headers.TryGetValue(HttpHeader.UserAgent, out userAgent);
+            req.Headers.TryGetValue(HttpHeader.UserAgent, out string userAgent);
             logger.Debug("Incoming request for index from:[{0}] with useragent:[{1}]", req.RemoteEndPoint, userAgent);
             return Index;
         }
@@ -44,7 +43,7 @@ namespace m.Sample
             {
                 using (session)
                 {
-                    BroadcastMessage(string.Format("*** session-{0} connected ({1} online)", session.Id, sessions.Count));
+                    BroadcastMessage($"*** session-{session.Id} connected ({sessions.Count} online)");
 
                     while (session.IsOpen)
                     {
@@ -54,7 +53,7 @@ namespace m.Sample
                         {
                             case WebSocketMessage.Type.Text:
                                 var text = (WebSocketMessage.Text)message;
-                                BroadcastMessage(string.Format("<session-{0}> {1}", session.Id, text.Payload));
+                                BroadcastMessage($"<session-{session.Id}> {text.Payload}");
                                 break;
 
                             case WebSocketMessage.Type.Close:
@@ -74,7 +73,7 @@ namespace m.Sample
             finally
             {
                 sessions.TryRemove(session.Id, out session);
-                BroadcastMessage(string.Format("*** session-{0} disconnected", session.Id));
+                BroadcastMessage($"*** session-{session.Id} disconnected");
             }
         }
 

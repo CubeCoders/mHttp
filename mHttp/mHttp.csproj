@@ -1,113 +1,20 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{19F964F5-5719-4665-AD8F-0AD5AF9DD4CE}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <RootNamespace>m</RootNamespace>
-    <AssemblyName>mHttp</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Externalconsole>true</Externalconsole>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Externalconsole>true</Externalconsole>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>pdbonly</DebugType>
+    <TargetFrameworks>netstandard1.4;net452</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Net" />
-    <Reference Include="System.Web" />
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.4'">
+    <PackageReference Include="System.Net.Security">
+      <Version>4.3.2</Version>
+    </PackageReference>
+    <PackageReference Include="System.Threading.Thread">
+      <Version>4.3.0</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Http\ContentTypes.cs" />
-    <Compile Include="Http\HttpResponse.cs" />
-    <Compile Include="Http\Method.cs" />
-    <Compile Include="Http\Metrics\Endpoints\StatusCodeCounter.cs" />
-    <Compile Include="Http\Router.cs" />
-    <Compile Include="Http\RouteTable.cs" />
-    <Compile Include="Http\Routing\Endpoint.cs" />
-    <Compile Include="Http\Routing\ITemplatePart.cs" />
-    <Compile Include="Http\Routing\RateLimitedEndpoint.cs" />
-    <Compile Include="Http\Routing\Route.cs" />
-    <Compile Include="Utils\LeakyBucket.cs" />
-    <Compile Include="Utils\LifeCycleBase.cs" />
-    <Compile Include="Utils\Reservoir.cs" />
-    <Compile Include="Utils\Streams.cs" />
-    <Compile Include="Utils\Time.cs" />
-    <Compile Include="Utils\WaitableTimer.cs" />
-    <Compile Include="Http\Metrics\RequestLogs.cs" />
-    <Compile Include="Utils\LifeCycleToken.cs" />
-    <Compile Include="Utils\Compression.cs" />
-    <Compile Include="Http\Backend\Tcp\ParseRequestException.cs" />
-    <Compile Include="Http\Backend\Tcp\RequestParser.cs" />
-    <Compile Include="Http\Backend\Tcp\HttpResponseWriter.cs" />
-    <Compile Include="Http\Route.cs" />
-    <Compile Include="Http\Metrics\RouterMetrics.cs" />
-    <Compile Include="Http\Backend\Tcp\SessionStreamException.cs" />
-    <Compile Include="Http\Backend\Tcp\SessionBase.cs" />
-    <Compile Include="Http\Backend\HttpRequest.cs" />
-    <Compile Include="Http\IHttpRequest.cs" />
-    <Compile Include="Http\Backend\Tcp\WebSocketSession.cs" />
-    <Compile Include="Http\Backend\Tcp\TcpSessionBase.cs" />
-    <Compile Include="Http\Backend\WebSockets\FrameDecoder.cs" />
-    <Compile Include="Http\Backend\WebSockets\FrameEncoder.cs" />
-    <Compile Include="Http\Backend\WebSockets\Extensions.cs" />
-    <Compile Include="Http\Backend\WebSockets\OpCode.cs" />
-    <Compile Include="Http\IWebSocketSession.cs" />
-    <Compile Include="Http\IWebSocketUpgradeRequest.cs" />
-    <Compile Include="Utils\BufferUtils.cs" />
-    <Compile Include="Http\WebSocketMessage.cs" />
-    <Compile Include="Http\WebSocketUpgradeResponse.cs" />
-    <Compile Include="Http\EndpointAttribute.cs" />
-    <Compile Include="Http\Endpoints.cs" />
-    <Compile Include="Logging\NullLogger.cs" />
-    <Compile Include="Logging\LoggingProvider.cs" />
-    <Compile Include="Logging\TextWriterLogger.cs" />
-    <Compile Include="Http\Metrics\Endpoints\HandlerTime.cs" />
-    <Compile Include="Http\Metrics\HostReport.cs" />
-    <Compile Include="Utils\RateCounter.cs" />
-    <Compile Include="Http\HttpBackend.cs" />
-    <Compile Include="Http\BCLHttpListenerBackend.cs" />
-    <Compile Include="Http\HttpsBackend.cs" />
-    <Compile Include="Http\HttpHeader.cs" />
-    <Compile Include="Http\Extensions\HttpRequestExtensions.cs" />
-    <Compile Include="Http\Handlers\StaticFileHandler.cs" />
-    <Compile Include="Http\Extensions\HttpResponseExtensions.cs" />
-    <Compile Include="Http\Filters.cs" />
-    <Compile Include="Http\Metrics\Endpoints\HourlyStatusCodeCounter.cs" />
-    <Compile Include="Http\Backend\Tcp\HttpSession.cs" />
-    <Compile Include="Http\Backend\RequestStream.cs" />
-    <Compile Include="Http\Backend\RequestException.cs" />
-    <Compile Include="Http\Backend\WebSocketException.cs" />
-    <Compile Include="Http\Handlers\Handler.cs" />
-    <Compile Include="Http\HttpBody.cs" />
-    <Compile Include="Utils\CountingDictionary.cs" />
-  </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <ItemGroup>
-    <Folder Include="Http\" />
-    <Folder Include="Utils\" />
-    <Folder Include="Http\Backend\" />
-    <Folder Include="Http\Backend\Tcp\" />
-    <Folder Include="Http\Backend\WebSockets\" />
-    <Folder Include="Logging\" />
-    <Folder Include="Http\Handlers\" />
-    <Folder Include="Http\Extensions\" />
+    <PackageReference Include="MimeKit" Version="2.1.1" />
+    <PackageReference Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
   </ItemGroup>
 </Project>

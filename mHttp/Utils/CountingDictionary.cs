@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Collections;
@@ -12,17 +11,14 @@ namespace m.Utils
         {
             int count;
 
-            public int Count { get { return count; } }
+            public int Count => count;
 
             public Counter(int count)
             {
                 this.count = count;
             }
 
-            public void Increment()
-            {
-                Interlocked.Increment(ref count);
-            }
+            public void Increment() => Interlocked.Increment(ref count);
         }
 
         readonly IDictionary<K, Counter> counters;
@@ -32,21 +28,13 @@ namespace m.Utils
             counters = new ConcurrentDictionary<K, Counter>();
         }
 
-        public IEnumerator<KeyValuePair<K, Counter>> GetEnumerator()
-        {
-            return ((IEnumerable<KeyValuePair<K, Counter>>)counters).GetEnumerator();
-        }
+        public IEnumerator<KeyValuePair<K, Counter>> GetEnumerator() => counters.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public void Count(K t)
         {
-            Counter counter;
-
-            if (!counters.TryGetValue(t, out counter))
+            if (!counters.TryGetValue(t, out Counter counter))
             {
                 lock (counters)
                 {

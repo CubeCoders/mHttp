@@ -15,7 +15,7 @@ namespace m.Http.Backend.Tcp
         HttpRequest requestState;
         int requests = 0;
 
-        public int KeepAlivesRemaining { get { return maxKeepAlives - requests; } }
+        public int KeepAlivesRemaining => maxKeepAlives - requests;
 
         public HttpSession(long id,
                            TcpClient tcpClient,

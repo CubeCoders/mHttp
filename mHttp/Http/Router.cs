@@ -42,7 +42,7 @@ namespace m.Http
 
         internal RouterMetrics Metrics { get; private set; }
         public RouteTable this[int RouteTableIndex] { get { return routeTables[RouteTableIndex]; } }
-        public int Length { get { return routeTables.Length; } }
+        public int Length => routeTables.Length;
 
         public Router(RouteTable routeTable, int requestLogsSize=8192, int timerPeriodMs=100) : this(new [] { routeTable }, requestLogsSize, timerPeriodMs) { }
 
@@ -63,25 +63,13 @@ namespace m.Http
                                       });
         }
 
-        public IEnumerator<RouteTable> GetEnumerator()
-        {
-            return ((IEnumerable<RouteTable>)routeTables).GetEnumerator();
-        }
+        public IEnumerator<RouteTable> GetEnumerator() => ((IEnumerable<RouteTable>)routeTables).GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        protected override void OnStart()
-        {
-            timer.Start();
-        }
+        protected override void OnStart() => timer.Start();
 
-        protected override void OnShutdown()
-        {
-            timer.Shutdown();
-        }
+        protected override void OnShutdown() => timer.Shutdown();
 
         void UpdateRateLimitBuckets()
         {

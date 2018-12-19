@@ -68,7 +68,7 @@ namespace m.Http
 
             sessionExceptionCounters = new CountingDictionary<Type>();
 
-            name = string.Format("{0}({1}:{2})", GetType().Name, address, port);
+            name = $"{GetType().Name}({address}:{port})";
 
             timer = new WaitableTimer(name,
                                       TimeSpan.FromSeconds(1),
@@ -93,10 +93,13 @@ namespace m.Http
 
                 var connectionLoopThread = new Thread(ConnectionLoop)
                 {
-                    Priority = ThreadPriority.AboveNormal,
                     IsBackground = false,
                     Name = name
                 };
+
+#if NET452
+                connectionLoopThread.Priority = ThreadPriority.AboveNormal;
+#endif
 
                 connectionLoopThread.Start();
             }
@@ -108,10 +111,14 @@ namespace m.Http
             {
                 timer.Shutdown();
                 listener.Stop();
+                foreach (var s in sessionTable)
+                {
+                    s.Value.CloseQuiety();
+                }
             }
         }
 
-        void ConnectionLoop()
+        async void ConnectionLoop()
         {
             listener.Start(backlog);
             logger.Info("Listening on {0}", listener.LocalEndpoint);
@@ -120,10 +127,10 @@ namespace m.Http
             {
                 try
                 {
-                    var client = listener.AcceptTcpClient();
+                    var client = await listener.AcceptTcpClientAsync();
                     var sessionId = ++acceptedSessions;
 
-                    Task.Run(() => HandleNewConnection(sessionId, client));
+                    HandleNewConnection(sessionId, client);
                 }
                 catch (SocketException e)
                 {
@@ -144,7 +151,7 @@ namespace m.Http
             router.Shutdown();
         }
 
-        async Task HandleNewConnection(long sessionId, TcpClient client)
+        async void HandleNewConnection(long sessionId, TcpClient client)
         {
             HttpSession newSession;
             try
@@ -159,7 +166,12 @@ namespace m.Http
             catch (Exception e)
             {
                 logger.Warn("Error creating session - {0}", e);
+#if NETSTANDARD
+                client.Dispose();
+#endif
+#if NET451
                 client.Close();
+#endif
                 return;
             }
 
@@ -209,16 +221,15 @@ namespace m.Http
                         {
                             continueRequestLoop = false;
 
-                            var acceptUpgrade = response as WebSocketUpgradeResponse.AcceptUpgradeResponse;
-                            if (acceptUpgrade == null)
-                            {
-                                var rejectUpgrade = (WebSocketUpgradeResponse.RejectUpgradeResponse)response;
-                                responseBytesWritten = await rejectUpgrade.WriteToAsync(session.Stream, 0, sessionReadTimeout).ConfigureAwait(false);
-                            }
-                            else
+                            if (response is WebSocketUpgradeResponse.AcceptUpgradeResponse acceptUpgrade)
                             {
                                 responseBytesWritten = await AcceptWebSocketUpgrade(session, result.MatchedRouteTableIndex, result.MatchedEndpointIndex, acceptUpgrade).ConfigureAwait(false);
                                 closeSessionOnReturn = false;
+                            }
+                            else
+                            {
+                                var rejectUpgrade = (WebSocketUpgradeResponse.RejectUpgradeResponse)response;
+                                responseBytesWritten = await rejectUpgrade.WriteToAsync(session.Stream, 0, sessionReadTimeout).ConfigureAwait(false);
                             }
                         }
                         else
@@ -359,8 +370,6 @@ namespace m.Http
                 throw new InvalidOperationException("Not started");
             }
 
-            Thread.MemoryBarrier();
-
             var now = DateTime.UtcNow;
             return new
             {
@@ -370,7 +379,7 @@ namespace m.Http
                     Port = port,
                     Sessions = new {
                         CurrentRate = sessionRate.GetCurrentRate(),
-                        MaxRate = sessionRate.MaxRate,
+                        sessionRate.MaxRate,
                         Current = sessionTable.Count,
                         Max = maxConnectedSessions,
                         Total = acceptedSessions,
