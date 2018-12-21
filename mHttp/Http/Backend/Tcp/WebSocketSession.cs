@@ -274,15 +274,16 @@ namespace m.Http.Backend.Tcp
                     lock (stateLock)
                     {
 #if NETSTANDARD
-                        if (!ms.TryGetBuffer(out var buffer))
+                        if (ms.TryGetBuffer(out var buffer))
                         {
                             Write(buffer.Array, 0, bytesWritten);
+                            onBytesSent(bytesWritten);
                         }
 #endif
 #if NET452
                         Write(ms.GetBuffer(), 0, bytesWritten);
-#endif
                         onBytesSent(bytesWritten);
+#endif
                     }
                 }
                 catch (SessionStreamException e)
