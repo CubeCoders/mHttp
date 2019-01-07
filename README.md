@@ -1,7 +1,6 @@
 # mHttp
 Low footprint fully managed C# HTTP/1.1 server library (.NET 4.6 and .Net Standard 1.4) for standing up RESTful services.
 
-Developed using [MonoDevelop 5.10](http://www.monodevelop.com/) on [Mono 4.4.1](http://www.mono-project.com/) (on Xubuntu 14.04).
 # Demo
 Check out the [sample project](https://github.com/cubecoders/mHttp/blob/master/mHttp.Sample/Program.cs) a
 
