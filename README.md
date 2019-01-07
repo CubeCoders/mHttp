@@ -1,21 +1,12 @@
 # mHttp
-Low footprint fully managed C# HTTP/1.1 server library (.NET 4.5) for standing up RESTful services.
+Low footprint fully managed C# HTTP/1.1 server library (.NET 4.6 and .Net Standard 1.4) for standing up RESTful services.
 
 Developed using [MonoDevelop 5.10](http://www.monodevelop.com/) on [Mono 4.4.1](http://www.mono-project.com/) (on Xubuntu 14.04).
-
-Released under the [MIT License](https://github.com/joongonn/mHttp/blob/master/LICENSE.txt).
 # Demo
-Check out the [sample project](https://github.com/joongonn/mHttp/blob/master/mHttp.Sample/Program.cs) at [http://mhttp.net](http://mhttp.net).
-
-![](https://raw.githubusercontent.com/wiki/joongonn/mHttp/images/demo.png)
+Check out the [sample project](https://github.com/cubecoders/mHttp/blob/master/mHttp.Sample/Program.cs) a
 
 # How to build 
-| CI | Platform | Status |
-| ---- | ---- | ---- |
-| Travis CI | Linux/Mono | [![Build Status](https://travis-ci.org/joongonn/mHttp.svg?branch=master)](https://travis-ci.org/joongonn/mHttp) |
-| AppVeyor | Windows | [![Build Status](https://ci.appveyor.com/api/projects/status/nu1rvyk7831m3jcm?svg=true)](https://ci.appveyor.com/project/joongonn/mhttp) |
-
-**IDE**: Open and build `mHttp.sln` in MonoDevelop 5 (also tested with Visual Studio Community 2015).
+**IDE**: Open and build `mHttp.sln`
 
 **Command-line**: Otherwise, to build on the command-line in *nx environment with [Mono installed](http://www.mono-project.com/docs/getting-started/install/linux/):
 ```shell
