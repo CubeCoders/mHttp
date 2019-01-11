@@ -1,8 +1,10 @@
 # mHttp
-Low footprint fully managed C# HTTP/1.1 server library (.NET 4.6 and .Net Standard 1.4) for standing up RESTful services.
+Low footprint fully managed C# HTTP/1.1 server library (.NET 4.5.2 and .Net Standard 1.4) for standing up RESTful services.
+
+This version has been modified from upstream to support .Net Standard 1.4 and includes some other fixes to socket handling. It retains its Mono compatibility (currently tested against 5.19.0) but sacrifices the BCL HTTP listener.
 
 # Demo
-Check out the [sample project](https://github.com/cubecoders/mHttp/blob/master/mHttp.Sample/Program.cs) a
+Check out the [sample project](https://github.com/cubecoders/mHttp/blob/master/mHttp.Sample/Program.cs)
 
 # How to build 
 **IDE**: Open and build `mHttp.sln`
