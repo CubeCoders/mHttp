@@ -125,6 +125,7 @@ namespace m.Sample
             var staticWebContentFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "web");
 
             var routeTable = new RouteTable(
+                Route.Post("/upload").With(Test),
                 Route.Get("/*").With(new DirectoryInfo(staticWebContentFolder)),
                 Route.Get("/").With(wsService.Redirect),
                 Route.Get("/plaintext").With(() => greeting),
@@ -136,6 +137,11 @@ namespace m.Sample
             );
 
             server.Start(routeTable);
+        }
+
+        public static HttpResponse Test(IHttpRequest request)
+        {
+            return new TextResponse("OK");
         }
     }
 }

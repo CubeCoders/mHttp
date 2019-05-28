@@ -58,10 +58,8 @@ namespace m.Http.Handlers
         //Linux paths when Path.Combined with the root directory never end up with / so that's fine. (/etc/passwd becomes /mySafeWebroot/etc/passwd) and promptly 404s.
         private static Regex BadFileRegex = new Regex(@"^[a-z]+:\/\/|[a-z]:\\"); 
 
-        private static bool VerifyPathAcceptable(string filename)
-        {
-            return BadFileRegex.IsMatch(filename);
-        }
+        private static bool VerifyPathAcceptable(string filename) => !BadFileRegex.IsMatch(filename);
+      
 
         public HttpResponse Handle(IHttpRequest req)
         {

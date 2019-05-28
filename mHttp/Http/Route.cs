@@ -95,22 +95,24 @@ namespace m.Http
 
         public static Endpoint ApplyResponseFilter(this Endpoint ep, Func<IHttpRequest, HttpResponse, HttpResponse> filter)
         {
-            AsyncRequestHandler filteredHandler = async req => {
+            async Task<HttpResponse> filteredHandler(IHttpRequest req)
+            {
                 var originalResp = await ep.Handler(req).ConfigureAwait(false);
                 var filteredResp = filter(req, originalResp);
                 return filteredResp;
-            };
+            }
 
             return new Endpoint(ep.Method, ep.Route, filteredHandler);
         }
 
         public static Endpoint ApplyAsyncResponseFilter(this Endpoint ep, Func<IHttpRequest, HttpResponse, Task<HttpResponse>> asyncFilter)
         {
-            AsyncRequestHandler filteredHandler = async req => {
+            async Task<HttpResponse> filteredHandler(IHttpRequest req)
+            {
                 var originalResp = await ep.Handler(req).ConfigureAwait(false);
                 var filteredResp = await asyncFilter(req, originalResp).ConfigureAwait(false);
                 return filteredResp;
-            };
+            }
 
             return new Endpoint(ep.Method, ep.Route, filteredHandler);
         }
