@@ -12,8 +12,6 @@ namespace m.Http.Handlers
 {
     public class StaticFileHandler // not threadsafe really, but good for now
     {
-        readonly LoggingProvider.ILogger logger = LoggingProvider.GetLogger(typeof(StaticFileHandler));
-
         class CachedFile
         {
             public FileResponse.Buffered Response { get; }
@@ -56,7 +54,7 @@ namespace m.Http.Handlers
 
         //Matches the protocol part of URLS (http(s)://) or absolute Win32 paths (X:\), or attempts at relative paths (..). 
         //Linux paths when Path.Combined with the root directory never end up with / so that's fine. (/etc/passwd becomes /mySafeWebroot/etc/passwd) and promptly 404s.
-        private static Regex BadFileRegex = new Regex(@"^[a-z]+:\/\/|[a-z]:\\"); 
+        private static readonly Regex BadFileRegex = new Regex(@"^[a-z]+:\/\/|[a-z]:\\"); 
 
         private static bool VerifyPathAcceptable(string filename) => !BadFileRegex.IsMatch(filename);
       
