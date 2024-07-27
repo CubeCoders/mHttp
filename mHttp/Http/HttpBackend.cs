@@ -156,10 +156,7 @@ namespace m.Http
             HttpSession newSession;
             try
             {
-                //TODO: configurable
                 client.NoDelay = true;
-                client.SendBufferSize = 8192;
-                client.ReceiveBufferSize = 8192;
 
                 newSession = await CreateSession(sessionId, client).ConfigureAwait(false);
             }
